@@ -25,3 +25,23 @@
 #container a {
   text-decoration: none;
 }
+.anuncio {
+  color: red;
+  font-size: 40px;
+  text-align: center;
+  padding: 5rem;
+  border: 1px solid;
+}
+.error-message {
+  color: red;
+  text-align: center;
+  padding: 0;
+  margin: 0;
+  font-size: 20px;
+}
+
+.reservar {
+  font-weight: bold;
+  text-align: center;
+  font-size: 18px;
+}

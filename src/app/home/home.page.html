@@ -1,20 +1,504 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>
-      Blank
+      Tab 1
     </ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-grid fixed>
+    <ion-row>
+      <ion-col size="12">
+        <ion-datetime
+          presentation="date"
+          [multiple]="true"
+          [highlightedDates]="reservacionEvento"
+          (ionChange)="onDateChange($event)"
+          size="cover"
+          #calendar
+        ></ion-datetime>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col size="12" *ngIf="disponible === -1">
+        <h1 class="anuncio">Por favor seleccione una fecha</h1>
+      </ion-col>
+      <ion-col size="12" *ngIf="disponible === 0">
+        <ion-toolbar>
+          <ion-buttons slot="secondary">
+            <ion-button>
+              <ion-icon (click)="setUpdate(false)" name="eye-outline"></ion-icon>
+            </ion-button>
+            <ion-button>
+              <ion-icon (click)="setUpdate(true)" name="create-outline" color="primary"></ion-icon>
+            </ion-button>
+            <ion-button>
+              <ion-icon slot="icon-only" name="trash-outline" color="danger"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+          <ion-title>Reservación de: {{eventoSeleccionado?.nombreCliente}}</ion-title>
+        </ion-toolbar>
+        <form [formGroup]="eventoForm">
+          <ion-grid fixed>
+            <ion-row>
+              <ion-col size="4.5">
+                <ion-item>
+                  <ion-input formControlName="horaInicio" label="Hora de Inicio" type="number" placeholder="Formato 24hrs"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.horaInicio">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('horaInicio')?.hasError(error.tipo) && eventoForm.get('horaInicio')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="4.5">
+                <ion-item>
+                  <ion-input formControlName="horaFin" label="Hora de Fin" type="number" placeholder="Formato 24hrs"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.horaFin">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('horaFin')?.hasError(error.tipo) && eventoForm.get('horaFin')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="tipoEvento" placeholder="Tipo de Evento">
+                    <ion-select-option value="XV años">XV años</ion-select-option>
+                    <ion-select-option value="Boda">Boda</ion-select-option>
+                    <ion-select-option value="Cumpleaños">Cumpleaños</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.tipoEvento">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('tipoEvento')?.hasError(error.tipo) && eventoForm.get('tipoEvento')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+            </ion-row>
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-input formControlName="nombreCliente" label="Nombre:" type="text" placeholder="del Cliente"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.nombreCliente">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('nombreCliente')?.hasError(error.tipo) && eventoForm.get('nombreCliente')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-input formControlName="celularCliente" label="Celular:" type="text" placeholder="del Cliente"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.celularCliente">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('celularCliente')?.hasError(error.tipo) && eventoForm.get('celularCliente')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-item>
+                  <ion-input formControlName="nota" label="Nota:" type="text" placeholder="Descripción"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-input formControlName="llenadoAgua" (ionChange)="calcularExtras()" label="Alberca:" type="number" placeholder="45% - No 100% - Maximo"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.llenadoAgua">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('llenadoAgua')?.hasError(error.tipo) && eventoForm.get('llenadoAgua')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="mesaRegalos" placeholder="Mesa de Regalos">
+                    <ion-select-option value="si">Si</ion-select-option>
+                    <ion-select-option value="no">No</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.mesaRegalos">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('mesaRegalos')?.hasError(error.tipo) && eventoForm.get('mesaRegalos')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="brincolin" label="Brincolin:" (ionChange)="calcularExtras()" placeholder="Brincolin">
+                    <ion-select-option value="si">Si</ion-select-option>
+                    <ion-select-option value="no">No</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.brincolin">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('brincolin')?.hasError(error.tipo) && eventoForm.get('brincolin')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-input formControlName="cantPersonas" label="Personas:" type="number" placeholder="Cantidad de personas"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.cantPersonas">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('cantPersonas')?.hasError(error.tipo) && eventoForm.get('cantPersonas')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              
+            </ion-row>
+              <ion-row>
+                <ion-col size="3">
+                  <ion-item>
+                    <ion-select formControlName="mantelColor" [multiple]="true" placeholder="Manteles">
+                      <ion-select-option value="ROJO">Rojo</ion-select-option>
+                      <ion-select-option value="AZUL">Azul</ion-select-option>
+                      <ion-select-option value="BLANCO">Blanco</ion-select-option>
+                      <ion-select-option value="VERDE">Verde</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ng-container *ngFor="let error of validationMessages.mantelColor">
+                    <ion-item
+                      class="error-message"
+                      *ngIf="eventoForm.get('mantelColor')?.hasError(error.tipo) && eventoForm.get('mantelColor')?.touched"
+                    >
+                      <ion-label>{{ error.mensaje }}</ion-label>
+                    </ion-item>
+                  </ng-container>
+                </ion-col>
+
+                <ion-col size="4.5">
+                  <ion-item *ngIf="eventoForm.controls['resto'].value>0" color="danger">
+                    <ion-input  formControlName="resto" label="Resto:" readonly type="number" placeholder=""></ion-input>
+                  </ion-item>
+                  <ion-item *ngIf="eventoForm.controls['resto'].value===0" color="success">
+                    <ion-input  formControlName="resto" label="Resto:" readonly type="number" placeholder=""></ion-input>
+                  </ion-item>
+                </ion-col>
+
+                <ion-col size="4.5">
+                  <ion-item>
+                    <ion-select formControlName="metodoPago" placeholder="Método de pago">
+                      <ion-select-option value="EFECTIVO">Efectivo</ion-select-option>
+                      <ion-select-option value="TRANSFERENCIA">Transferencia</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ng-container *ngFor="let error of validationMessages.metodoPago">
+                    <ion-item
+                      class="error-message"
+                      *ngIf="eventoForm.get('metodoPago')?.hasError(error.tipo) && eventoForm.get('metodoPago')?.touched"
+                    >
+                      <ion-label>{{ error.mensaje }}</ion-label>
+                    </ion-item>
+                  </ng-container>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="12">
+                  <ion-item color="success">
+                    <ion-input  formControlName="precioTotal" readonly label="Total:" type="number" placeholder=""></ion-input>
+                  </ion-item>
+                </ion-col>
+                
+              </ion-row>
+
+              <ion-row>
+                <ion-col size="12">
+                  <ion-button expand="full" (click)="modificar()" [disabled]="!eventoForm.valid||updateEvt" color="success" >
+                    Modificar/Liquidar
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+
+
+              
+          </ion-grid>
+          
+          
+        </form>
+        
+      </ion-col>
+      <ion-col size="12" *ngIf="disponible === 1">
+        <ion-item>
+          <ion-label class="reservar">Reservar para el día {{fechaSel}}</ion-label>
+        </ion-item>
+        <form [formGroup]="eventoForm">
+          <ion-grid fixed>
+            <ion-row>
+              <ion-col size="4.5">
+                <ion-item>
+                  <ion-input formControlName="horaInicio" label="Hora de Inicio" type="number" placeholder="Formato 24hrs"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.horaInicio">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('horaInicio')?.hasError(error.tipo) && eventoForm.get('horaInicio')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="4.5">
+                <ion-item>
+                  <ion-input formControlName="horaFin" label="Hora de Fin" type="number" placeholder="Formato 24hrs"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.horaFin">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('horaFin')?.hasError(error.tipo) && eventoForm.get('horaFin')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="tipoEvento" placeholder="Tipo de Evento">
+                    <ion-select-option value="XV años">XV años</ion-select-option>
+                    <ion-select-option value="Boda">Boda</ion-select-option>
+                    <ion-select-option value="Cumpleaños">Cumpleaños</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.tipoEvento">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('tipoEvento')?.hasError(error.tipo) && eventoForm.get('tipoEvento')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+            </ion-row>
+
+            <ion-row>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-input formControlName="nombreCliente" label="Nombre:" type="text" placeholder="del Cliente"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.nombreCliente">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('nombreCliente')?.hasError(error.tipo) && eventoForm.get('nombreCliente')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item>
+                  <ion-input formControlName="celularCliente" label="Celular:" type="text" placeholder="del Cliente"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.celularCliente">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('celularCliente')?.hasError(error.tipo) && eventoForm.get('celularCliente')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="12">
+                <ion-item>
+                  <ion-input formControlName="nota" label="Nota:" type="text" placeholder="Descripción"></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+            <ion-row>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-input formControlName="llenadoAgua" (ionChange)="calcularExtras()" label="Alberca:" type="number" placeholder="45% - No 100% - Maximo"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.llenadoAgua">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('llenadoAgua')?.hasError(error.tipo) && eventoForm.get('llenadoAgua')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="mesaRegalos" placeholder="Mesa de Regalos">
+                    <ion-select-option value="si">Si</ion-select-option>
+                    <ion-select-option value="no">No</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.mesaRegalos">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('mesaRegalos')?.hasError(error.tipo) && eventoForm.get('mesaRegalos')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-select formControlName="brincolin" label="Brincolin:" (ionChange)="calcularExtras()" placeholder="Brincolin">
+                    <ion-select-option value="si">Si</ion-select-option>
+                    <ion-select-option value="no">No</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.brincolin">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('brincolin')?.hasError(error.tipo) && eventoForm.get('brincolin')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              <ion-col size="3">
+                <ion-item>
+                  <ion-input formControlName="cantPersonas" label="Personas:" type="number" placeholder="Cantidad de personas"></ion-input>
+                  
+                </ion-item>
+                <ng-container *ngFor="let error of validationMessages.cantPersonas">
+                  <ion-item
+                    class="error-message"
+                    *ngIf="eventoForm.get('cantPersonas')?.hasError(error.tipo) && eventoForm.get('cantPersonas')?.touched"
+                  >
+                    <ion-label>{{ error.mensaje }}</ion-label>
+                  </ion-item>
+                </ng-container>
+              </ion-col>
+              
+            </ion-row>
+              <ion-row>
+                <ion-col size="3">
+                  <ion-item>
+                    <ion-select formControlName="mantelColor" [multiple]="true" placeholder="Manteles">
+                      <ion-select-option value="ROJO">Rojo</ion-select-option>
+                      <ion-select-option value="AZUL">Azul</ion-select-option>
+                      <ion-select-option value="BLANCO">Blanco</ion-select-option>
+                      <ion-select-option value="VERDE">Verde</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ng-container *ngFor="let error of validationMessages.mantelColor">
+                    <ion-item
+                      class="error-message"
+                      *ngIf="eventoForm.get('mantelColor')?.hasError(error.tipo) && eventoForm.get('mantelColor')?.touched"
+                    >
+                      <ion-label>{{ error.mensaje }}</ion-label>
+                    </ion-item>
+                  </ng-container>
+                </ion-col>
+
+                <ion-col size="4.5">
+                  <ion-item>
+                    <ion-input formControlName="aCuenta" (ionChange)="calcularExtras()" label="Anticipo:" type="number" placeholder="$"></ion-input>
+                    
+                  </ion-item>
+                  <ng-container *ngFor="let error of validationMessages.aCuenta">
+                    <ion-item
+                      class="error-message"
+                      *ngIf="eventoForm.get('aCuenta')?.hasError(error.tipo) && eventoForm.get('aCuenta')?.touched"
+                    >
+                      <ion-label>{{ error.mensaje }}</ion-label>
+                    </ion-item>
+                  </ng-container>
+                </ion-col>
+
+                <ion-col size="4.5">
+                  <ion-item>
+                    <ion-select formControlName="metodoPago" placeholder="Método de pago">
+                      <ion-select-option value="EFECTIVO">Efectivo</ion-select-option>
+                      <ion-select-option value="TRANSFERENCIA">Transferencia</ion-select-option>
+                    </ion-select>
+                  </ion-item>
+                  <ng-container *ngFor="let error of validationMessages.metodoPago">
+                    <ion-item
+                      class="error-message"
+                      *ngIf="eventoForm.get('metodoPago')?.hasError(error.tipo) && eventoForm.get('metodoPago')?.touched"
+                    >
+                      <ion-label>{{ error.mensaje }}</ion-label>
+                    </ion-item>
+                  </ng-container>
+                </ion-col>
+              </ion-row>
+              <ion-row>
+                <ion-col size="8">
+                  <ion-item color="success">
+                    <ion-input  formControlName="precioTotal" readonly label="Total:" type="number" placeholder=""></ion-input>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="4">
+                  <ion-item color="warning">
+                    <ion-input  formControlName="resto" readonly label="Resto:" type="number" placeholder=""></ion-input>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+
+              <ion-row>
+                <ion-col size="12">
+                  <ion-button expand="full" (click)="agregarEvento()" [disabled]="!eventoForm.valid" color="success" >
+                    Reservar
+                  </ion-button>
+                </ion-col>
+              </ion-row>
+
+
+              
+          </ion-grid>
+          
+          
+        </form>
+      </ion-col>
+
+      <ion-col size="12" *ngIf="disponible === 2">
+        <h1 class="anuncio">Fecha no valida</h1>
+      </ion-col>
+    </ion-row>
+    
+  </ion-grid>
 </ion-content>
