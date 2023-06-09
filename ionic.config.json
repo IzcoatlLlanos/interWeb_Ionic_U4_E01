@@ -1,0 +1,7 @@
+{
+  "name": "frontCasino",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
